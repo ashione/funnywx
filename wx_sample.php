@@ -4,12 +4,14 @@ include_once './models/joke.php';
 include_once './wx_define.php';
 include_once './models/user.php';
 include_once 'wx_distance.php';
+include_once './models/attendance.php';
+
 define("TOKEN", "6mUonZ");//改成自己的TOKEN
 define('APP_ID', 'wx688aaa7ee34cd8df');//改成自己的APPID
 define('APP_SECRET', '0197f0241b2e84f74bbc715a47a94b24');//改成自己的APPSECRET
 
 $wechatObj = new wechatCallbackapiTest(APP_ID,APP_SECRET);
-//$wechatObj->valid();
+#$wechatObj->valid();
 $wechatObj->Run();
 
 class wechatCallbackapiTest
@@ -91,6 +93,19 @@ class wechatCallbackapiTest
                             }
                             goto finish;
                         }
+                        elseif($EventKey == "V1001_ATTENDANCE"){
+                           $attendanceIns = new attendance($this->fromUsername,
+                               now_time(),
+                               $mc->get($this->fromUsername.'_latitude','0.0'),
+                               $mc->get($this->fromUsername.'_longitude','0.0'));
+                           if(attendance::addModel($attendanceIns)){
+                               $arr[] = "签到成功(输入ckqd查询本月签到)";
+                           }
+                           else{
+                               $arr[] = "签到失败，或者您今日已经完成签到(输入ckqd查询本月签到)";
+                           }
+                           goto finish;
+                        }
                         echo $this->make_xml("text",$arr);
                         exit;
                     }
@@ -116,7 +131,7 @@ class wechatCallbackapiTest
                             $arr[] = "注册成功";
                         }
                         else{
-                            $arr[]= "填写错误，请重新输入bd";
+                            $arr[]= "填写错误，请重新输入bd;\n或您已经注册，不需要重复注册。";
                         }
                         $mc->delete($this->fromUsername);
                         goto finish;
@@ -140,6 +155,16 @@ class wechatCallbackapiTest
                     elseif($this->keyword == 'cz'){
                         $arr[]= "您启动了查找程序。(请输入需要查找的名字,如 左凌轩)";
                         $mc->set($this->fromUsername.'_cz',true);
+                    }
+                    elseif($this->keyword=='ckqd'){
+                        $records=attendance::findCurrentMonthRecordsById($this->fromUsername);
+                        $resultStr = "本月签到记录:";
+                        if(count($records)){
+                            foreach($records as $item){
+                                $resultStr = $resultStr."\n".$item->getAttendanceTime();
+                            }
+                        }
+                        $arr[] = $resultStr;
                     }
                     else{
                         $model = joke::getRandomJoke();

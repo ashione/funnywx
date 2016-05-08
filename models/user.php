@@ -12,15 +12,21 @@ class user extends WXtableBase{
     public $gender=0;
 
     public function __construct(){
+        $a = func_get_args();
+        $i = func_num_args();
+        if (method_exists($this,$f='__construct'.$i)) {
+           call_user_func_array(array($this,$f),$a);
+        }
     }
 
-    public function __construct1($wx_id_,$name_,$phonenumber_,$email_,$department_,$gender_=0){
+    public function __construct6($wx_id_,$name_,$phonenumber_,$email_,$department_,$gender_=0){
         $this->wx_id = $wx_id_;
         $this->name = $name_;
         $this->phonenumber = $phonenumber_;
         $this->email = $email_;
         $this->department = $department_;
         $this->gender = $gender_;
+#        print($wx_id.'register');
 
     }
     public function getVarsNameList(){

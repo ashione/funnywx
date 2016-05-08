@@ -7,4 +7,8 @@ function memcache_init(){
     $mem->connect(MEMCACHE_HOST,MEMCACHE_PORT);
     return $mem;
 }
+function now_time(){
+    date_default_timezone_set("PRC");
+    return date('Y-m-d',time());
+}
 ?>
