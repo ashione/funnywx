@@ -3,6 +3,7 @@
 include_once './models/joke.php';
 include_once './wx_define.php';
 include_once './models/user.php';
+include_once 'wx_distance.php';
 define("TOKEN", "6mUonZ");//改成自己的TOKEN
 define('APP_ID', 'wx688aaa7ee34cd8df');//改成自己的APPID
 define('APP_SECRET', '0197f0241b2e84f74bbc715a47a94b24');//改成自己的APPSECRET
@@ -66,11 +67,41 @@ class wechatCallbackapiTest
                         $arr[] = "你好，我是大杰哥，现在我们是好友咯![愉快][玫瑰]";
                         echo $this->make_xml("text",$arr);
                         exit;
-                    }elseif ($MsgEvent=='CLICK') {//点击事件
+                    }
+                    elseif ($MsgEvent=='CLICK') {//点击事件
                         $EventKey = $postObj->EventKey;//菜单的自定义的key值，可以根据此值判断用户点击了什么内容，从而推送不同信息
-                        $arr[] = $EventKey;
+                        if($EventKey == "V1001_WEATHER")
+                        {
+                            #$cityname=urlencode("杭州");//将字符串转化成url编码
+                            //$url="http://v.juhe.cn/weather/index?format=2&cityname=".$cityname."&key=a692c7c032961b01c10b3d6fb46d1807";
+                            if($mc->get($this->fromUsername.'_location',false)){
+                                $url="http://v.juhe.cn/weather/geo?format=2".
+                                    "&key=a692c7c032961b01c10b3d6fb46d1807&lon=".
+                                    $mc->get($this->fromUsername.'_longitude').'&lat='.
+                                    $mc->get($this->fromUsername.'_latitude');
+                                $str=file_get_contents($url);//把整个文件放到字符串里
+                                $de_json = json_decode($str,TRUE);//把json数据转化成数组形式
+                                $contentStr="城市：".$de_json['result']['today']['city']."\n日期：".$de_json['result']['today']['date_y'].$de_json['result']['today']['week']."\n当前温度：".$de_json['result']['sk']['temp']."度\n今日风级：". $de_json['result']['sk']['wind_strength'].$de_json['result']['sk']['wind_direction']."\n今日温度：".$de_json['result']['today']['temperature']."\n今日天气：".$de_json['result']['today']['weather']."\n着装建议：".$de_json['result']['today']['dressing_advice']."";
+
+                                $arr[] = $contentStr;
+                            }
+                            else{
+
+                                $arr[] = "未获得您的地址位置";
+                            }
+                            goto finish;
+                        }
                         echo $this->make_xml("text",$arr);
                         exit;
+                    }
+                    elseif ($MsgEvent=='LOCATION') {//点击事件
+                        #$arr[] = "LOCATION 纬度:".$postObj->Latitude.' 经度:'.$postObj->Longitude."\n距离 : ".distance($postObj->Latitude,$postObj->Longitude);
+                        $arr[] = "您距离目的大约(千米):".distance((float)$postObj->Latitude,(float)$postObj->Longitude);
+                        $mc->set($this->fromUsername.'_location',true);
+                        $mc->set($this->fromUsername.'_latitude',(string)$postObj->Latitude);
+                        $mc->set($this->fromUsername.'_longitude',(string)$postObj->Longitude);
+                        #echo $this->make_xml("text",$arr);
+                        goto finish;
                     }
                 }
                 elseif($MsgType=='text'){
@@ -112,7 +143,7 @@ class wechatCallbackapiTest
                     }
                     else{
                         $model = joke::getRandomJoke();
-                        $arr[]= $this->fromUsername.$this->keyword."\n下面是随机的一句话 : \n" .$model[0]->content;
+                        $arr[]= "下面是随机的一句话 : \n" .$model[0]->content;
                         //$arr[] = $model[0]->content;
 
                     }
