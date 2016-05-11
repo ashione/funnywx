@@ -106,6 +106,14 @@ class wechatCallbackapiTest
                            }
                            goto finish;
                         }
+                        elseif($EventKey == "V1001_HOME"){
+                           $arr[] = "输入bd绑定个人信息";
+                           goto finish;
+                        }
+                        elseif($EventKey == "V1001_CONTACT"){
+                           $arr[] = "输入cz查找通讯录";
+                           goto finish;
+                        }
                         echo $this->make_xml("text",$arr);
                         exit;
                     }
