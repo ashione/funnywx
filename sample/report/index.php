@@ -50,7 +50,7 @@ session_start();
     $user_obj = json_decode($res,true);
     $_SESSION['user'] = $user_obj;
 #}
-print_r($_SESSION['user']);
+#print_r($_SESSION['user']);
 // remove tweets older than 1 hour to prevent spam
 #mysql_query("DELETE FROM reportTimeline WHERE id>1 AND dt<SUBTIME(NOW(),'0 1:0:0')");
 

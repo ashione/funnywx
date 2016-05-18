@@ -123,11 +123,11 @@ class wechatCallbackapiTest
                                (float)$mc->get($this->fromUsername.'_latitude','0.0'),
                                (float)$mc->get($this->fromUsername.'_longitude','0.0')
                            );
-                           if($attendance_dist<2.0 && attendance::addModel($attendanceIns)){
+                           if($attendance_dist < 2.0 && attendance::addModel($attendanceIns)){
                                $arr[] = "签到成功(输入ckqd查询本月签到)";
                            }
                            else{
-                               if($attendance_dist < 2.0)
+                               if($attendance_dist > 2.0)
                                    $arr[] = "签到失败，距离:".$attendance_dist." 太远";
                                 else{
                                    $arr[] = "您今日已经完成签到(输入ckqd查询本月签到)";
@@ -179,7 +179,7 @@ class wechatCallbackapiTest
                         if(count($models))
                             $arr[] = "查找成功:".$models[0]->toString();
                         else
-                            $arr[] = "查无此人.";
+                            $arr[] = "查无此人";
                         $mc->delete($this->fromUsername.'_cz');
                         goto finish;
 
@@ -190,7 +190,7 @@ class wechatCallbackapiTest
                         $mc->set($this->fromUsername,true);
                     }
                     elseif($this->keyword == 'cz'){
-                        $arr[]= "您启动了查找程序。(请输入需要查找的姓名，如：王静芬)";
+                        $arr[]= "您启动了查找程序。\n请输入需要查找的姓名";
                         $mc->set($this->fromUsername.'_cz',true);
                     }
                     elseif($this->keyword=='ckqd'){
